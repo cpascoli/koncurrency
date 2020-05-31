@@ -18,7 +18,7 @@ data class Task(val name: String, val duration: Long) {
 fun main()  {
 
     val tasks = listOf(
-        Task("hello", 10000),
+        Task("hello", 2000),
         Task("world", 500)
     )
 
@@ -27,12 +27,17 @@ fun main()  {
     val time = measureTimeMillis {
 
         runBlocking {
-            val jobs = processTasks(tasks)
 
+            val jobs : List<Deferred<String>> = tasks.map { task ->
+                GlobalScope.async (start = CoroutineStart.LAZY) {
+                    println("invoking task ${task.name}")
+                    task.run()
+                }
+            }
 
             jobs.forEachIndexed { idx, job ->
                 job.start()
-                println("task ${tasks[idx].name} started")
+                println("job ${tasks[idx].name} started")
             }
 
             val results : List<String> = jobs.map {
@@ -46,16 +51,4 @@ fun main()  {
     }
 
     println("time: $time ms")
-}
-
-
-suspend fun processTasks(tasks : List<Task>) : List<Deferred<String>> {
-
-    val jobs : List<Deferred<String>> = tasks.map {
-        GlobalScope.async (start = CoroutineStart.LAZY) {
-            println("Execute: ${it.name}")
-            it.run()
-        }
-    }
-    return jobs
 }

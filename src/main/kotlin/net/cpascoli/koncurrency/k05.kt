@@ -10,7 +10,7 @@ import kotlin.system.measureTimeMillis
 fun main()  {
 
     val words = listOf("hello", "world")
-//    words.forEach { println(it) }
+    words.forEach { println(it) }
 
     val uppercase = createActor { msg : Message ->
         val uppercased = msg.input.toUpperCase()
@@ -24,7 +24,6 @@ fun main()  {
 
 
     val start = GlobalScope.actor<Message> {
-
         // internal state
         var words = mutableListOf<String>()
 

@@ -8,42 +8,34 @@ import kotlin.system.measureTimeMillis
 
 data class Task(val name: String, val duration: Long) {
     suspend fun run () {
-        println("  > ${Thread.currentThread().name} is running task $name")
+        println("  > ${Thread.currentThread().name} is running task - $name")
         delay(duration)
-        println("  > ${Thread.currentThread().name} is done with $name")
+        println("  > ${Thread.currentThread().name} is done with - $name")
     }
 }
 
 fun main()  {
 
-    val tasks = listOf(
-        Task("hello", 2000),
-        Task("world", 1000)
-    )
-
-    tasks.forEach { println(it) }
+    val tasks =  MutableList(size = 10) { index ->
+        Task("hello world ($index)", 1000)
+    }
 
     val time = measureTimeMillis {
 
-        runBlocking {
-            val jobs = processTasks(tasks)
+       runBlocking {
+
+           println("${Thread.currentThread().name} - starting ${tasks.size} tasks")
+
+            val jobs : List<Job> = tasks.map { task ->
+               GlobalScope.launch {
+                   task.run()
+               }
+            }
+
             jobs.joinAll()
-            println("tasks completed")
+            println("${Thread.currentThread().name} - all tasks completed")
         }
     }
-
 
     println("time: $time ms")
-}
-
-
-suspend fun processTasks(tasks : List<Task>) : List<Job> {
-
-    val jobs : List<Job> = tasks.map {
-        GlobalScope.launch {
-            println("Execute: ${it.name}")
-            it.run()
-        }
-    }
-    return jobs
 }
